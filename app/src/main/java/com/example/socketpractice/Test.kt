@@ -16,8 +16,6 @@ fun main(){
 
             val socket = server.accept()
 
-            socket.getInputStream() // 클라이언트의 socket.outputStream
-            socket.getOutputStream() // 클라이언트의 socket.inputStream
 
             val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
             val printer = PrintWriter(socket.getOutputStream())
@@ -28,7 +26,7 @@ fun main(){
                 input = reader.readLine()
             }
 
-            System.out.println("READ DATA $input")
+            println("READ DATA $input")
 
             printer.println("HTTP/1.1 200 OK ") //Http1.1 버전을 사용하겠고 200은 데이터를 정상적으로 응답
             printer.println("Content-Type: text/html\r\n") // 컨텐트타입은 text에 html 타입으로 보내주겠다  \r\n 넣어주는이유는 규격 이게 헤더부분 (보진않지만 서버와 클라이언트간 통신할때)
