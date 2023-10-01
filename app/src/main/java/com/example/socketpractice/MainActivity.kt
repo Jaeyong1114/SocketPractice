@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import com.example.socketpractice.databinding.ActivityMainBinding
+import com.google.gson.Gson
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -55,10 +56,13 @@ class MainActivity : AppCompatActivity() {
                     //요청에 성공했을때
                     if (response.isSuccessful) {
                         val response = response.body?.string()
+
+                        val message = Gson().fromJson(response, Message::class.java)
+
                         runOnUiThread{
                             binding.informationTextView.apply{
                                 isVisible = true
-                                text=response
+                                text=message.message
                                 //요청에 성공하고 데이터도 성공적으로 받아올때
                             }
                             binding.serverHostEditText.isVisible = false
