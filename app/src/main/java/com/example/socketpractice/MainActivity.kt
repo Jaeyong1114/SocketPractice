@@ -5,6 +5,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
 import android.util.Log
+import android.view.View
+import android.widget.Toast
+import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import com.example.socketpractice.databinding.ActivityMainBinding
 import okhttp3.Call
 import okhttp3.Callback
@@ -24,31 +28,62 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         val client = OkHttpClient()
-
-        val request: Request = Request.Builder()
-            .url("http://10.0.2.2:8080")   //에뮬 테스트
-            .build()
-
-
-        val callback = object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                //요청에 실패했을때
-                Log.e("Client", e.toString())
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                //요청에 성공했을때
-                if (response.isSuccessful) {
-                    //요청에 성공하고 데이터도 성공적으로 받아올때
-                    Log.e("Client", "${response.body?.string()}")//body부분가져옴
-                }
-            }
-
+        var serverHost = ""
+        binding.serverHostEditText.addTextChangedListener{ //에딧텍스트에 글자를 입력할때마다 변경이 됨
+            serverHost = it.toString()
         }
 
-        client.newCall(request).enqueue(callback)// 큐로 쌓아놨다가 넣는순서대로 동작 처리 하고 onFail 이나 onResponse 로 데이터 넘겨주게됨
+        binding.confirmButton.setOnClickListener {
+            val request: Request = Request.Builder()
+                .url("http://$serverHost:8080")   //에뮬 테스트
+                .build()
+
+
+            val callback = object : Callback { //Callback 은 쓰레드를 새로만듬
+                override fun onFailure(call: Call, e: IOException) {
+                    //요청에 실패했을때
+                    runOnUiThread{
+                        Toast.makeText(this@MainActivity,"수신에 실패했습니다",Toast.LENGTH_SHORT).show()
+                        Log.e("Client", e.toString())
+
+                    }
+
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    //요청에 성공했을때
+                    if (response.isSuccessful) {
+                        val response = response.body?.string()
+                        runOnUiThread{
+                            binding.informationTextView.apply{
+                                isVisible = true
+                                text=response
+                                //요청에 성공하고 데이터도 성공적으로 받아올때
+                            }
+                            binding.serverHostEditText.isVisible = false
+                            binding.confirmButton.isVisible = false
+
+                        }
+
+
+
+                    } else {
+                        runOnUiThread {
+                            Toast.makeText(this@MainActivity,"수신에 실패했습니다",Toast.LENGTH_SHORT).show()
+                        }
+                        Toast.makeText(this@MainActivity,"수신에 실패했습니다",Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+            }
+
+            client.newCall(request).enqueue(callback)// 큐로 쌓아놨다가 넣는순서대로 동작 처리 하고 onFail 이나 onResponse 로 데이터 넘겨주게됨
+
+        }
+        binding.informationTextView
+
+
 
 
         /*Thread {
